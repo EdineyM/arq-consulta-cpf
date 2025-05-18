@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle2, XCircle, Pizza, ArrowLeft, PartyPopper } from "lucide-react"
 import { VoucherCard } from "./voucher-card"
 import { verificarEGerarVoucher } from "@/app/actions"
+import { format } from 'date-fns';
+
+const formattedDate = format(new Date(), 'yyyy-MM-dd');
 
 // Tipos para os dados
 interface Cliente {
@@ -24,12 +27,13 @@ interface Evento {
 
 interface Voucher {
   id: number
-  codigo: string
-  data_geracao: string
-  valor: number
-  percentual_desconto: number
-  utilizado: boolean
-  expiracao: string
+  code: string
+  cpf: string
+  value: number
+  utilized: boolean
+  date_used: boolean
+  date_expiration: string
+  date_generated: string
 }
 
 interface ResultadoVerificacao {
@@ -58,45 +62,11 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
         setIsLoading(true)
         setError("")
 
-        // Em um ambiente real, isso seria uma chamada à API
+        // Chamada real à API
         const resultado = await verificarEGerarVoucher(cpf)
-
-        // Simulação de chamada à API com timeout para simular carregamento
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-
-        // Dados simulados para demonstração
-        // Simulando dois cenários: com e sem direito a voucher
-        const temDireito = cpf.endsWith("1") // Apenas para simular diferentes resultados
-
-        const dadosSimulados: ResultadoVerificacao = {
-          cliente: {
-            nome: "Cliente Exemplo",
-            cpf,
-          },
-          eventos_ano_anterior: temDireito
-            ? [
-                { id: 1, data_evento: "2023-05-15", tipo_evento: "Festa de Aniversário", valor: 1500 },
-                { id: 2, data_evento: "2023-08-22", tipo_evento: "Confraternização", valor: 2000 },
-              ]
-            : [],
-          voucher_gerado: temDireito
-            ? {
-                id: 1,
-                codigo: `PIZZA${Math.floor(Math.random() * 10000)}`,
-                data_geracao: new Date().toISOString().split("T")[0],
-                valor: 150,
-                percentual_desconto: 15,
-                utilizado: false,
-                expiracao: "2024-12-31",
-              }
-            : null,
-          tem_direito: temDireito,
-          mensagem: temDireito
-            ? "Parabéns! Você ganhou um voucher promocional com base nos seus eventos do ano passado."
-            : "Você não realizou eventos no ano passado e não tem direito a vouchers promocionais.",
-        }
-
-        setResultado(dadosSimulados)
+        
+        // Usa o resultado real
+        setResultado(resultado)
       } catch (err) {
         console.error("Erro ao verificar cliente:", err)
         setError("Ocorreu um erro ao verificar seus vouchers. Tente novamente.")

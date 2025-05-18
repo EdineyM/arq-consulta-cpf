@@ -6,8 +6,6 @@ interface Voucher {
   code: string
   cpf: string
   value: number
-  // data_geracao: string
-  // percentual_desconto: number
   utilized: boolean
   date_used: boolean
   date_expiration: string

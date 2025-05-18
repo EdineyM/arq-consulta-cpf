@@ -11,6 +11,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle2, XCircle, Loader2, Pizza, Ticket, Calendar, User } from "lucide-react"
 import { VoucherCard } from "./voucher-card"
 import { EventosList } from "./eventos-list"
+import { format } from 'date-fns';
+
+const formattedDate = format(new Date(), 'yyyy-MM-dd');
+
 
 // Tipos para os dados
 interface Evento {
@@ -22,12 +26,13 @@ interface Evento {
 
 interface Voucher {
   id: number
-  codigo: string
-  data_geracao: string
-  valor: number
-  percentual_desconto: number
-  utilizado: boolean
-  expiracao: string
+  code: string
+  cpf: string
+  value: number
+  utilized: boolean
+  date_used: boolean
+  date_expiration: string
+  date_generated: string
 }
 
 interface ResultadoVerificacao {
@@ -104,23 +109,25 @@ export function VoucherGenerator() {
         vouchers_disponiveis: [
           {
             id: 1,
-            codigo: "PIZZA2024A",
-            data_geracao: "2024-01-05",
-            valor: 150,
-            percentual_desconto: 10,
-            utilizado: false,
-            expiracao: "2024-12-31",
+            code: "PIZZA2024A",
+            cpf: cleanCpf,
+            value: 150,
+            utilized: false,
+            date_used: false,
+            date_expiration: "2024-12-31",
+            date_generated: "2024-01-05",
           },
         ],
         vouchers_utilizados: [
           {
             id: 2,
-            codigo: "PIZZA2024B",
-            data_geracao: "2024-01-05",
-            valor: 200,
-            percentual_desconto: 15,
-            utilizado: true,
-            expiracao: "2024-12-31",
+            code: "PIZZA2024B",
+            cpf: cleanCpf,
+            value: 200,
+            utilized: true,
+            date_used: true,
+            date_expiration: "2024-12-31",
+            date_generated: "2024-01-05",
           },
         ],
         pode_gerar_voucher: true,
@@ -148,12 +155,13 @@ export function VoucherGenerator() {
 
       const novoVoucher: Voucher = {
         id: Math.floor(Math.random() * 1000),
-        codigo: `PIZZA${Math.floor(Math.random() * 10000)}`,
-        data_geracao: new Date().toISOString().split("T")[0],
-        valor: Math.floor(Math.random() * 100) + 100,
-        percentual_desconto: 15,
-        utilizado: false,
-        expiracao: "2024-12-31",
+        code: `PIZZA${Math.floor(Math.random() * 10000)}`,
+        cpf: resultado.cliente.cpf,
+        value: Math.floor(Math.random() * 100) + 100,
+        utilized: false,
+        date_used: false,
+        date_expiration: "2024-12-31",
+        date_generated: formattedDate,
       }
 
       setVoucherGerado(novoVoucher)
