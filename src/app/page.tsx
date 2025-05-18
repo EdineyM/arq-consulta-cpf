@@ -18,7 +18,7 @@ export default function Home() {
       <div className="w-full md:w-2/3 flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-md mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Verificação de Benefícios</h1>
+            <h2 className="text-3xl font-bold text-gray-800">Verificação de Benefícios</h2>
             <p className="text-gray-600 mt-2">
               Verifique se você tem direito a levar duas pessoas extras na sua proxima festa!!
             </p>

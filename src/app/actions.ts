@@ -34,46 +34,131 @@ function isValidCPF(cpf: string): boolean {
   return true
 }
 
-export async function verifyCpf(cpf: string) {
+// Função para verificar eventos do ano anterior e gerar voucher se necessário
+export async function verificarEGerarVoucher(cpf: string) {
   // Validar formato do CPF
   if (!isValidCPF(cpf)) {
-    return {
-      eligible: false,
-      message: "CPF inválido. Por favor, verifique o número informado.",
-    }
+    throw new Error("CPF inválido")
   }
 
   try {
     // Criar cliente Supabase
     const supabase = createServerSupabaseClient()
 
-    // Consultar o CPF na tabela clientes_2024
-    const { data, error } = await supabase
-      .from("clientes_2024")
-      .select("id, nome, data_festa")
+    // Obter dados do cliente
+    const { data: cliente, error: clienteError } = await supabase
+      .from("clientes")
+      .select("cpf, nome")
       .eq("cpf", cpf)
-      .maybeSingle()
+      .single()
 
-    if (error) {
-      console.error("Erro ao consultar o Supabase:", error)
-      throw new Error("Erro ao verificar o CPF no banco de dados")
+    if (clienteError) {
+      throw new Error("Cliente não encontrado")
     }
 
-    if (data) {
-      // Cliente encontrado - tem direito ao benefício
+    // Obter ano atual e anterior
+    const anoAtual = new Date().getFullYear()
+    const anoAnterior = anoAtual - 1
+
+    // Obter eventos do ano anterior
+    const { data: eventosAnoAnterior, error: eventosAnoAnteriorError } = await supabase
+      .from("eventos")
+      .select("id, data_evento, tipo_evento")
+      .eq("cpf", cpf)
+      .gte("data_evento", `${anoAnterior}-01-01`)
+      .lte("data_evento", `${anoAnterior}-12-31`)
+      .order("data_evento", { ascending: false })
+
+    if (eventosAnoAnteriorError) {
+      throw new Error("Erro ao obter eventos do ano anterior")
+    }
+
+    // Verificar se o cliente tem direito a voucher
+    const temDireito = eventosAnoAnterior && eventosAnoAnterior.length > 0
+
+    // Se não tem direito, retornar resultado
+    if (!temDireito) {
       return {
-        eligible: true,
-        message: `Você tem direito a levar duas pessoas extras na festa de 2025! Parabéns, ${data.nome}!`,
+        cliente,
+        eventos_ano_anterior: [],
+        voucher_gerado: null,
+        tem_direito: false,
+        mensagem: "Você não realizou eventos no ano passado e não tem direito a vouchers promocionais.",
       }
-    } else {
-      // Cliente não encontrado
+    }
+
+    // Verificar se já existe um voucher para este cliente este ano
+    const { data: vouchersExistentes, error: vouchersExistentesError } = await supabase
+      .from("vouchers")
+      .select("id")
+      .eq("cpf", cpf)
+      .gte("created_at", `${anoAtual}-01-01`)
+      .count()
+
+    if (vouchersExistentesError) {
+      throw new Error("Erro ao verificar vouchers existentes")
+    }
+
+    // Se já existe voucher, não gerar novo
+    if (vouchersExistentes && vouchersExistentes.count > 0) {
+      // Obter o voucher existente
+      const { data: voucherExistente, error: voucherExistenteError } = await supabase
+        .from("vouchers")
+        .select("*")
+        .eq("cpf", cpf)
+        .gte("created_at", `${anoAtual}-01-01`)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()
+
+      if (voucherExistenteError) {
+        throw new Error("Erro ao obter voucher existente")
+      }
+
       return {
-        eligible: false,
-        message: "CPF não encontrado ou sem festa registrada em 2024.",
+        cliente,
+        eventos_ano_anterior: eventosAnoAnterior || [],
+        voucher_gerado: voucherExistente,
+        tem_direito: true,
+        mensagem: "Você já possui um voucher promocional gerado este ano.",
       }
+    }
+
+    // Gerar código único para o voucher
+    const codigo = `PIZZA${Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, "0")}`
+
+    // Definir data de expiração (final do ano atual)
+    const dataExpiracao = `${anoAtual}-12-31`
+
+    // Inserir novo voucher
+    const { data: voucher, error: voucherError } = await supabase
+      .from("vouchers")
+      .insert({
+        codigo,
+        cpf,
+        created_at: new Date().toISOString().split("T")[0],
+        valor: 150, // Valor padrão
+        utilized: false,
+        expiration: dataExpiracao,
+      })
+      .select()
+      .single()
+
+    if (voucherError) {
+      throw new Error("Erro ao gerar voucher")
+    }
+
+    return {
+      cliente,
+      eventos_ano_anterior: eventosAnoAnterior || [],
+      voucher_gerado: voucher,
+      tem_direito: true,
+      mensagem: "Parabéns! Você ganhou um voucher promocional com base nos seus eventos do ano passado.",
     }
   } catch (error) {
-    console.error("Erro ao verificar CPF:", error)
-    throw new Error("Erro ao verificar o CPF")
+    console.error("Erro ao verificar eventos e gerar voucher:", error)
+    throw error
   }
 }

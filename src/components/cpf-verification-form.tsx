@@ -3,16 +3,16 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
-import { verifyCpf } from "@/app/actions"
+import { XCircle, Loader2, Ticket } from "lucide-react"
 
 export function CpfVerificationForm() {
+  const router = useRouter()
   const [cpf, setCpf] = useState("")
-  const [result, setResult] = useState<{ eligible: boolean; message: string } | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -46,31 +46,66 @@ export function CpfVerificationForm() {
       return
     }
 
+    // Validação básica do CPF (dígitos verificadores)
+    if (!isValidCPF(cleanCpf)) {
+      setError("CPF inválido. Por favor, verifique o número informado.")
+      return
+    }
+
     setIsLoading(true)
     setError("")
 
     try {
-      const response = await verifyCpf(cleanCpf)
-      setResult(response)
+      // Redirecionar para a página de vouchers com o CPF como parâmetro
+      router.push(`/vouchers?cpf=${cleanCpf}`)
     } catch (err) {
-      setError("Ocorreu um erro ao verificar o CPF. Tente novamente.")
+      setError("Ocorreu um erro ao processar sua solicitação. Tente novamente.")
       console.error(err)
-    } finally {
       setIsLoading(false)
     }
   }
 
+  // Função para validar CPF
+  function isValidCPF(cpf: string): boolean {
+    // Check if it has 11 digits
+    if (cpf.length !== 11) return false
+
+    // Check if all digits are the same
+    if (/^(\d)\1+$/.test(cpf)) return false
+
+    // Validate first check digit
+    let sum = 0
+    for (let i = 0; i < 9; i++) {
+      sum += Number.parseInt(cpf.charAt(i)) * (10 - i)
+    }
+    let remainder = (sum * 10) % 11
+    if (remainder === 10 || remainder === 11) remainder = 0
+    if (remainder !== Number.parseInt(cpf.charAt(9))) return false
+
+    // Validate second check digit
+    sum = 0
+    for (let i = 0; i < 10; i++) {
+      sum += Number.parseInt(cpf.charAt(i)) * (11 - i)
+    }
+    remainder = (sum * 10) % 11
+    if (remainder === 10 || remainder === 11) remainder = 0
+    if (remainder !== Number.parseInt(cpf.charAt(10))) return false
+
+    return true
+  }
+
   return (
-    <Card className="shadow-lg border-0">
+    <Card className="shadow-lg border-0 animate-fade-in bg-white">
       <CardHeader>
-        <CardTitle>Consulta de CPF</CardTitle>
-        <CardDescription>
-          Digite seu CPF para verificar se você tem direito a levar duas pessoas extras na festa de 2025
-        </CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <Ticket className="h-5 w-5 text-red-600" />
+          Consulta de CPF
+        </CardTitle>
+        <CardDescription>Digite seu CPF para verificar se você tem direito a vouchers promocionais</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-2 animate-slide-in-left animation-delay-300">
             <label htmlFor="cpf" className="text-sm font-medium">
               CPF
             </label>
@@ -79,43 +114,39 @@ export function CpfVerificationForm() {
               placeholder="000.000.000-00"
               value={cpf}
               onChange={handleCpfChange}
-              className="w-full"
+              className="w-full transition-all duration-200 focus:scale-[1.01]"
               maxLength={14}
             />
           </div>
 
           {error && (
-            <Alert variant="destructive">
-              <XCircle className="h-4 w-4" />
+            <Alert variant="destructive" className="animate-slide-in-bottom">
+              <XCircle className="h-4 w-4 animate-pulse" />
               <AlertTitle>Erro</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          {result && (
-            <Alert
-              variant={result.eligible ? "default" : "destructive"}
-              className={result.eligible ? "bg-green-50 text-green-800 border-green-200" : ""}
-            >
-              {result.eligible ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4" />}
-              <AlertTitle>{result.eligible ? "Parabéns!" : "Não encontrado"}</AlertTitle>
-              <AlertDescription>{result.message}</AlertDescription>
-            </Alert>
-          )}
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full transition-all duration-300 bg-red-600 hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] text-white"
+            disabled={isLoading}
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Verificando...
               </>
             ) : (
-              "Verificar"
+              <>
+                <Ticket className="mr-2 h-4 w-4" />
+                Verificar
+              </>
             )}
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="text-xs text-gray-500 justify-center">
+      <CardFooter className="text-xs text-gray-500 justify-center animate-fade-in animation-delay-500">
         Sistema de verificação de benefícios para clientes
       </CardFooter>
     </Card>

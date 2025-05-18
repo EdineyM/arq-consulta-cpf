@@ -1,3 +1,5 @@
+
+
 import { createClient } from "@supabase/supabase-js"
 
 // Criando o cliente Supabase para uso no servidor
