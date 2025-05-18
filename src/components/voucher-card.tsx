@@ -3,12 +3,15 @@ import { Ticket, CheckCircle, XCircle } from "lucide-react"
 
 interface Voucher {
   id: number
-  codigo: string
-  data_geracao: string
-  valor: number
-  percentual_desconto: number
-  utilizado: boolean
-  expiracao: string
+  code: string
+  cpf: string
+  value: number
+  // data_geracao: string
+  // percentual_desconto: number
+  utilized: boolean
+  date_used: boolean
+  date_expiration: string
+  date_generated: string
 }
 
 interface VoucherCardProps {
@@ -18,14 +21,14 @@ interface VoucherCardProps {
 
 export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
   // Formatar datas
-  const dataGeracao = new Date(voucher.data_geracao).toLocaleDateString("pt-BR")
-  const dataExpiracao = new Date(voucher.expiracao).toLocaleDateString("pt-BR")
+  const dataGeracao = new Date(voucher.date_generated).toLocaleDateString("pt-BR")
+  const dataExpiracao = new Date(voucher.date_expiration).toLocaleDateString("pt-BR")
 
   // Formatar valor
   const valorFormatado = new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(voucher.valor)
+  }).format(voucher.value)
 
   return (
     <Card
@@ -37,9 +40,9 @@ export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Ticket className="h-5 w-5" />
-            <span className="font-bold">{voucher.codigo}</span>
+            <span className="font-bold">{voucher.code}</span>
           </div>
-          {voucher.utilizado ? (
+          {voucher.utilized ? (
             <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full text-xs">
               <CheckCircle className="h-3 w-3" />
               <span>Utilizado</span>
@@ -58,11 +61,6 @@ export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500">Valor:</span>
             <span className="font-bold text-gray-900">{valorFormatado}</span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Desconto:</span>
-            <span className="font-bold text-gray-900">{voucher.percentual_desconto}%</span>
           </div>
 
           <div className="flex justify-between items-center">

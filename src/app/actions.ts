@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 // Função para validar CPF
 function isValidCPF(cpf: string): boolean {
@@ -43,14 +43,14 @@ export async function verificarEGerarVoucher(cpf: string) {
 
   try {
     // Criar cliente Supabase
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
 
     // Obter dados do cliente
-    const { data: cliente, error: clienteError } = await supabase
-      .from("clientes")
-      .select("cpf, nome")
-      .eq("cpf", cpf)
-      .single()
+    const { data: cliente, error: clienteError } = await (await supabase).from("clientes").select("*").eq("cpf", cpf).single()
+      // .from("clientes")
+      // .select("cpf, nome")
+      // .eq("cpf", cpf)
+      // .single()
 
     if (clienteError) {
       throw new Error("Cliente não encontrado")
@@ -61,13 +61,13 @@ export async function verificarEGerarVoucher(cpf: string) {
     const anoAnterior = anoAtual - 1
 
     // Obter eventos do ano anterior
-    const { data: eventosAnoAnterior, error: eventosAnoAnteriorError } = await supabase
-      .from("eventos")
-      .select("id, data_evento, tipo_evento")
-      .eq("cpf", cpf)
-      .gte("data_evento", `${anoAnterior}-01-01`)
-      .lte("data_evento", `${anoAnterior}-12-31`)
-      .order("data_evento", { ascending: false })
+    const { data: eventosAnoAnterior, error: eventosAnoAnteriorError } = await (await supabase).from("eventos").select("id, data_evento, tipo_evento").eq("cpf", cpf).gte("data_evento", `${anoAnterior}-01-01`).lte("data_evento", `${anoAnterior}-12-31`).order("data_evento", { ascending: false })
+      // .from("eventos")
+      // .select("id, data_evento, tipo_evento")
+      // .eq("cpf", cpf)
+      // .gte("data_evento", `${anoAnterior}-01-01`)
+      // .lte("data_evento", `${anoAnterior}-12-31`)
+      // .order("data_evento", { ascending: false })
 
     if (eventosAnoAnteriorError) {
       throw new Error("Erro ao obter eventos do ano anterior")
@@ -88,11 +88,11 @@ export async function verificarEGerarVoucher(cpf: string) {
     }
 
     // Verificar se já existe um voucher para este cliente este ano
-    const { data: vouchersExistentes, error: vouchersExistentesError } = await supabase
+    const { data: vouchersExistentes, error: vouchersExistentesError } = await (await supabase)
       .from("vouchers")
       .select("id")
       .eq("cpf", cpf)
-      .gte("created_at", `${anoAtual}-01-01`)
+      .gte("date_generated", `${anoAtual}-01-01`)
       .count()
 
     if (vouchersExistentesError) {
@@ -102,12 +102,12 @@ export async function verificarEGerarVoucher(cpf: string) {
     // Se já existe voucher, não gerar novo
     if (vouchersExistentes && vouchersExistentes.count > 0) {
       // Obter o voucher existente
-      const { data: voucherExistente, error: voucherExistenteError } = await supabase
+      const { data: voucherExistente, error: voucherExistenteError } = await (await supabase)
         .from("vouchers")
         .select("*")
         .eq("cpf", cpf)
-        .gte("created_at", `${anoAtual}-01-01`)
-        .order("created_at", { ascending: false })
+        .gte("date_generated", `${anoAtual}-01-01`)
+        .order("date_generated", { ascending: false })
         .limit(1)
         .single()
 
@@ -125,7 +125,7 @@ export async function verificarEGerarVoucher(cpf: string) {
     }
 
     // Gerar código único para o voucher
-    const codigo = `PIZZA${Math.floor(Math.random() * 10000)
+    const code = `PIZZA${Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, "0")}`
 
@@ -133,13 +133,13 @@ export async function verificarEGerarVoucher(cpf: string) {
     const dataExpiracao = `${anoAtual}-12-31`
 
     // Inserir novo voucher
-    const { data: voucher, error: voucherError } = await supabase
+    const { data: voucher, error: voucherError } = await (await supabase)
       .from("vouchers")
       .insert({
-        codigo,
+        code,
         cpf,
-        created_at: new Date().toISOString().split("T")[0],
-        valor: 150, // Valor padrão
+        date_generated: new Date().toISOString().split("T")[0],
+        value: 150, // Valor padrão
         utilized: false,
         expiration: dataExpiracao,
       })
