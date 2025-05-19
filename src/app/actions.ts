@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
+import { customAlphabet } from 'nanoid';
 
 // Função para validar CPF
 function isValidCPF(cpf: string): boolean {
@@ -36,8 +38,50 @@ function isValidCPF(cpf: string): boolean {
 }
 
 // Gerar código para voucher (separado da renderização)
-function gerarCodigoVoucher() {
-  return `PIZZA${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
+export async function gerarCodigoVoucher(prefixo: string = 'PIZZA', tentativas: number = 5): Promise<string> {
+  // Criar cliente Supabase
+  const supabase = await createClient();
+  
+  // Criar gerador de código alfanumérico seguro (sem caracteres ambíguos)
+  const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 6);
+  
+  // Gerar timestamp parcial (últimos 4 dígitos)
+  const timestamp = Date.now().toString().slice(-4);
+  
+  // Tentativas para garantir unicidade
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      // Gerar componentes do código
+      const uniquePart = nanoid();
+      
+      // Montar código completo
+      const code = `${prefixo}${timestamp}${uniquePart}`;
+      
+      // Verificar se já existe este código no banco de dados
+      const { count, error } = await supabase
+        .from("vouchers")
+        .select("*", { count: 'exact', head: true })
+        .eq("code", code);
+      
+      if (error) {
+        console.error("Erro ao verificar unicidade do código:", error);
+        continue; // Tentar novamente
+      }
+      
+      // Se o código for único, retornar
+      if (count === 0) {
+        return code;
+      }
+    } catch (error) {
+      console.error("Erro ao gerar código de voucher:", error);
+      // Continuar tentando
+    }
+  }
+  
+  // Se todas as tentativas falharem, gerar um código com UUID como fallback
+  // Isso praticamente garante unicidade, mas resulta em um código mais longo
+  const fallbackCode = `${prefixo}${uuidv4().replace(/-/g, '').substring(0, 8).toUpperCase()}`;
+  return fallbackCode;
 }
 
 export async function verificarEGerarVoucher(cpf: string) {
@@ -69,7 +113,7 @@ export async function verificarEGerarVoucher(cpf: string) {
     // Obter eventos do ano anterior (corrigido)
     const { data: eventosAnoAnterior, error: eventosAnoAnteriorError } = await supabase
       .from("eventos")
-      .select("id, data_evento, tipo_evento")
+      .select("id, data_evento, tipo_evento, valor")
       .eq("cpf", cpf)
       .gte("data_evento", `${anoAnterior}-01-01`)
       .lte("data_evento", `${anoAnterior}-12-31`)
@@ -112,8 +156,8 @@ export async function verificarEGerarVoucher(cpf: string) {
         .eq("cpf", cpf)
         .gte("date_generated", `${anoAtual}-01-01`)
         .order("date_generated", { ascending: false })
-        .limit(1)
-        .single();
+        // .limit(1)
+        // .single();
 
       if (voucherExistenteError) {
         throw new Error("Erro ao obter voucher existente");
@@ -129,7 +173,7 @@ export async function verificarEGerarVoucher(cpf: string) {
     }
 
     // Gerar código único para o voucher (fora do processo de renderização)
-    const code = gerarCodigoVoucher();
+    const code = await gerarCodigoVoucher();
     
     // Definir data de expiração (final do ano atual)
     const dataExpiracao = `${anoAtual}-12-31`;
@@ -144,9 +188,9 @@ export async function verificarEGerarVoucher(cpf: string) {
         code,
         cpf,
         date_generated: dataGerada, // Usando created_at consistentemente
-        value: 150, // Valor padrão
+        value: 2, // Valor padrão
         utilized: false,
-        expiration: dataExpiracao,
+        date_expiration: dataExpiracao,
       })
       .select()
       .single();

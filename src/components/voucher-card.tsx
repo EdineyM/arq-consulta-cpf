@@ -7,7 +7,7 @@ interface Voucher {
   cpf: string
   value: number
   utilized: boolean
-  date_used: boolean
+  date_used: string
   date_expiration: string
   date_generated: string
 }
@@ -31,7 +31,7 @@ export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
   return (
     <Card
       className={`overflow-hidden border-0 ${
-        highlight ? "animate-pulse-slow shadow-xl ring-2 ring-red-500" : "shadow-md"
+        highlight ? "shadow-xl ring-2 ring-red-500" : "shadow-md"
       }`}
     >
       <div className="bg-gradient-to-r from-red-600 to-red-500 p-3 text-white">
@@ -57,8 +57,8 @@ export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
       <CardContent className="p-4">
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Valor:</span>
-            <span className="font-bold text-gray-900">{valorFormatado}</span>
+            <span className="text-sm text-gray-500">Convidados Extra:</span>
+            <span className="font-bold text-gray-900">{voucher.value}</span>
           </div>
 
           <div className="flex justify-between items-center">

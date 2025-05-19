@@ -173,8 +173,17 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
 
           {resultado.tem_direito && resultado.voucher_gerado && (
             <div className="mt-6 animate-scale-in">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Seu Voucher Promocional:</h3>
-              <VoucherCard voucher={resultado.voucher_gerado} highlight />
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Seus Vouchers Promocionais:</h3>
+                <div className="space-y-4">
+                {Array.isArray(resultado.voucher_gerado)
+                  ? resultado.voucher_gerado.map((voucher) => (
+                    <VoucherCard key={voucher.id} voucher={voucher} highlight />
+                  ))
+                  : resultado.voucher_gerado && (
+                    <VoucherCard voucher={resultado.voucher_gerado} highlight />
+                  )}
+                </div>
+              {/* <VoucherCard voucher={resultado.voucher_gerado} highlight /> */}
             </div>
           )}
 
@@ -192,7 +201,7 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
                       <p className="text-sm text-gray-700">{formatDate(evento.data_evento)}</p>
                     </div>
                     <div className="mt-2 sm:mt-0">
-                      <span className="font-bold text-gray-900">{formatCurrency(evento.valor)}</span>
+                      <span className="font-bold text-gray-900">Valor da festa: {formatCurrency(evento.valor)}</span>
                     </div>
                   </div>
                 ))}
