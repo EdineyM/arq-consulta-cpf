@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle2, XCircle, Pizza, ArrowLeft, PartyPopper } from "lucide-react"
 import { VoucherCard } from "./voucher-card"
 import { verificarEGerarVoucher } from "@/app/actions"
-import { format } from 'date-fns';
+import { format } from "date-fns"
 
-const formattedDate = format(new Date(), 'yyyy-MM-dd');
+const formattedDate = format(new Date(), "yyyy-MM-dd")
 
 // Tipos para os dados
 interface Cliente {
@@ -64,12 +64,12 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
 
         // Chamada real à API
         const resultado = await verificarEGerarVoucher(cpf)
-        
+
         // Usa o resultado real
         setResultado(resultado)
       } catch (err) {
         console.error("Erro ao verificar cliente:", err)
-        setError("Ocorreu um erro ao verificar seus vouchers. Tente novamente.")
+        setError("Ops! Ainda não fez sua festa? Clique no botão abaixo para ralizar o seu orçamento.")
       } finally {
         setIsLoading(false)
       }
@@ -103,10 +103,35 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
             <AlertTitle>Erro</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-          <Button onClick={voltar} className="w-full bg-red-600 hover:bg-red-700 text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+
+          <div className="space-y-4">
+            <Button onClick={voltar} className="w-full bg-red-600 hover:bg-red-700 text-white">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+
+            <Button
+              onClick={() => router.push("/orcamento")}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Button
+                onClick={() => router.push("/orcamento")}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
+              >
+                <div className="absolute -left-10 top-1/2 -translate-y-1/2 transform transition-all duration-500 opacity-20 group-hover:opacity-30 group-hover:-translate-x-2">
+                  <Pizza className="h-16 w-16 text-white" />
+                </div>
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <Pizza className="h-5 w-5 animate-pulse" />
+                  FAÇA JÁ SEU ORÇAMENTO
+                  <Pizza className="h-5 w-5 animate-pulse" />
+                </span>
+                <div className="absolute -right-10 top-1/2 -translate-y-1/2 transform transition-all duration-500 opacity-20 group-hover:opacity-30 group-hover:translate-x-2">
+                  <Pizza className="h-16 w-16 text-white" />
+                </div>
+              </Button>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )
@@ -121,10 +146,35 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
             <AlertTitle>Erro</AlertTitle>
             <AlertDescription>Não foi possível verificar seus vouchers. Tente novamente.</AlertDescription>
           </Alert>
-          <Button onClick={voltar} className="w-full bg-red-600 hover:bg-red-700 text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+
+          <div className="space-y-4">
+            <Button onClick={voltar} className="w-full bg-red-600 hover:bg-red-700 text-white">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+
+            <Button
+              onClick={() => router.push("/orcamento")}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Button
+                onClick={() => router.push("/orcamento")}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
+              >
+                <div className="absolute -left-10 top-1/2 -translate-y-1/2 transform transition-all duration-500 opacity-20 group-hover:opacity-30 group-hover:-translate-x-2">
+                  <Pizza className="h-16 w-16 text-white" />
+                </div>
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <Pizza className="h-5 w-5 animate-pulse" />
+                  FAÇA JÁ SEU ORÇAMENTO
+                  <Pizza className="h-5 w-5 animate-pulse" />
+                </span>
+                <div className="absolute -right-10 top-1/2 -translate-y-1/2 transform transition-all duration-500 opacity-20 group-hover:opacity-30 group-hover:translate-x-2">
+                  <Pizza className="h-16 w-16 text-white" />
+                </div>
+              </Button>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )
@@ -174,15 +224,13 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
           {resultado.tem_direito && resultado.voucher_gerado && (
             <div className="mt-6 animate-scale-in">
               <h3 className="text-lg font-medium text-gray-900 mb-3">Seus Vouchers Promocionais:</h3>
-                <div className="space-y-4">
+              <div className="space-y-4">
                 {Array.isArray(resultado.voucher_gerado)
                   ? resultado.voucher_gerado.map((voucher) => (
-                    <VoucherCard key={voucher.id} voucher={voucher} highlight />
-                  ))
-                  : resultado.voucher_gerado && (
-                    <VoucherCard voucher={resultado.voucher_gerado} highlight />
-                  )}
-                </div>
+                      <VoucherCard key={voucher.id} voucher={voucher} highlight />
+                    ))
+                  : resultado.voucher_gerado && <VoucherCard voucher={resultado.voucher_gerado} highlight />}
+              </div>
               {/* <VoucherCard voucher={resultado.voucher_gerado} highlight /> */}
             </div>
           )}
@@ -210,13 +258,39 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
           )}
 
           <div className="mt-6">
-            <Button
-              onClick={voltar}
-              className="w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] active:scale-[0.98] text-white"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para a página inicial
-            </Button>
+            <div className="space-y-4">
+              <Button
+                onClick={voltar}
+                className="w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] active:scale-[0.98] text-white"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar para a página inicial
+              </Button>
+
+              {!resultado.tem_direito && (
+                <Button
+                  onClick={() => router.push("/orcamento")}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Button
+                    onClick={() => router.push("/orcamento")}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
+                  >
+                    <div className="absolute -left-10 top-1/2 -translate-y-1/2 transform transition-all duration-500 opacity-20 group-hover:opacity-30 group-hover:-translate-x-2">
+                      <Pizza className="h-16 w-16 text-white" />
+                    </div>
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      <Pizza className="h-5 w-5 animate-pulse" />
+                      FAÇA JÁ SEU ORÇAMENTO
+                      <Pizza className="h-5 w-5 animate-pulse" />
+                    </span>
+                    <div className="absolute -right-10 top-1/2 -translate-y-1/2 transform transition-all duration-500 opacity-20 group-hover:opacity-30 group-hover:translate-x-2">
+                      <Pizza className="h-16 w-16 text-white" />
+                    </div>
+                  </Button>
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
