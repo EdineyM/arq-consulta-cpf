@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { XCircle, Loader2, Ticket } from "lucide-react"
+import { XCircle, Loader2, Ticket, AlertCircle } from "lucide-react"
+import { getClientByCpf, getContractsByClientCpf } from "@/lib/api"
 
 export function CpfVerificationForm() {
   const router = useRouter()
@@ -56,11 +57,42 @@ export function CpfVerificationForm() {
     setError("")
 
     try {
-      // Redirecionar para a página de vouchers com o CPF como parâmetro
-      router.push(`/vouchers?cpf=${cleanCpf}`)
+      // 1. Buscar cliente por CPF
+      const client = await getClientByCpf(cleanCpf)
+      
+      if (!client) {
+        setError("CPF não cadastrado em nosso sistema. Entre em contato conosco para mais informações.")
+        setIsLoading(false)
+        return
+      }
+
+      // 2. Buscar contratos do cliente
+      const contractsPage = await getContractsByClientCpf(cleanCpf)
+      
+      if (contractsPage.empty || contractsPage.content.length === 0) {
+        setError("Infelizmente ainda não foram realizados eventos com este CPF. Realize seu primeiro evento conosco para começar a acumular pontos!")
+        setIsLoading(false)
+        return
+      }
+
+      // 3. Verificar se há contratos aprovados com data passada (eventos completados)
+      const now = new Date()
+      const hasCompletedEvents = contractsPage.content.some(contract => {
+        const eventDate = new Date(contract.eventDate)
+        return contract.status === 'APPROVED' && eventDate < now
+      })
+
+      if (!hasCompletedEvents) {
+        setError("Você ainda não possui eventos finalizados. Complete seu primeiro evento para começar a acumular pontos!")
+        setIsLoading(false)
+        return
+      }
+
+      // 4. Cliente válido com eventos - redirecionar para página de pontos
+      router.push(`/programa-pontos?cpf=${cleanCpf}`)
     } catch (err) {
-      setError("Ocorreu um erro ao processar sua solicitação. Tente novamente.")
-      console.error(err)
+      console.error('Erro ao verificar CPF:', err)
+      setError("Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.")
       setIsLoading(false)
     }
   }
