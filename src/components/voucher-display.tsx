@@ -88,7 +88,7 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
         <CardContent className="flex flex-col items-center justify-center p-12">
           <Pizza className="h-16 w-16 text-red-600 animate-spin mb-4" />
           <h3 className="text-xl font-bold text-gray-900">Verificando seus vouchers...</h3>
-          <p className="text-gray-700 mt-2">Estamos checando se você tem direito a vouchers promocionais</p>
+          <p className="text-gray-700 mt-2">Estamos checando se você tem direito a desconto de 5% no próximo evento</p>
         </CardContent>
       </Card>
     )
@@ -223,7 +223,7 @@ export function VoucherDisplay({ cpf }: { cpf: string }) {
 
           {resultado.tem_direito && resultado.voucher_gerado && (
             <div className="mt-6 animate-scale-in">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Seus Vouchers Promocionais:</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Seus Vouchers de Desconto:</h3>
               <div className="space-y-4">
                 {Array.isArray(resultado.voucher_gerado)
                   ? resultado.voucher_gerado.map((voucher) => (

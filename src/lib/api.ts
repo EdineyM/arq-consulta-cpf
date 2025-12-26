@@ -3,37 +3,6 @@ import type { Client, Contract, Page, PointsSummary, Voucher, VoucherGenerateReq
 // Configure sua URL base do backend aqui
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
-// Configure o código da franquia (ex: 'SJC', 'SPO', etc.)
-const FRANCHISE_CODE = process.env.NEXT_PUBLIC_FRANCHISE_CODE || 'SJC';
-
-// Cache para o franchiseId
-let cachedFranchiseId: string | null = null;
-
-/**
- * Busca o UUID da franquia pelo código (ex: 'SJC', 'SPO')
- */
-export async function getFranchiseId(): Promise<string> {
-  // Retornar do cache se já buscamos antes
-  if (cachedFranchiseId) {
-    return cachedFranchiseId;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/franchises/public/franchise/${FRANCHISE_CODE}`);
-    
-    if (!response.ok) {
-      throw new Error(`Franquia com código ${FRANCHISE_CODE} não encontrada`);
-    }
-    
-    const franchise = await response.json();
-    cachedFranchiseId = franchise.id;
-    return franchise.id;
-  } catch (error) {
-    console.error('Erro ao buscar franchise:', error);
-    throw new Error('Erro ao buscar informações da franquia');
-  }
-}
-
 /**
  * Busca cliente por CPF/CNPJ
  */
@@ -130,30 +99,47 @@ export function calculateContractPoints(contract: Contract): number {
 
 /**
  * Gera um voucher usando pontos disponíveis
- * NOTA: Este endpoint precisa ser criado no backend
  */
-export async function generateVoucher(request: Omit<VoucherGenerateRequest, 'franchiseId'>): Promise<Voucher> {
+export async function generateVoucher(request: { cpfCnpj: string; points: number }): Promise<Voucher> {
   try {
-    // Buscar franchiseId dinamicamente
-    const franchiseId = await getFranchiseId();
+    if (!request || !request.cpfCnpj) {
+      throw new Error('CPF é obrigatório para gerar voucher');
+    }
     
-    const response = await fetch(`${API_BASE_URL}/vouchers/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...request,
-        franchiseId
-      }),
-    });
+    if (!request.points || request.points <= 0) {
+      throw new Error('Quantidade de pontos inválida');
+    }
+    
+    const cleanCpf = request.cpfCnpj.replace(/\D/g, '');
+    
+    // Agora usa percent ao invés de points
+    const requestUrl = `${API_BASE_URL}/vouchers?cpfCnpj=${cleanCpf}&percent=${request.points}`;
+    console.log('🔵 Gerando voucher - URL:', requestUrl);
+    console.log('🔵 Dados da request:', { cpfCnpj: cleanCpf, percent: request.points });
+    
+    // O backend espera cpfCnpj e percent como query params
+    const response = await fetch(
+      requestUrl,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    console.log('🔵 Response status:', response.status);
+    console.log('🔵 Response ok:', response.ok);
     
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Erro ao gerar voucher' }));
+      console.error('🔴 Erro na resposta:', error);
       throw new Error(error.message || 'Erro ao gerar voucher');
     }
     
-    return await response.json();
+    const voucherData = await response.json();
+    console.log('🟢 Voucher criado com sucesso:', voucherData);
+    return voucherData;
   } catch (error) {
     console.error('Erro ao gerar voucher:', error);
     throw error;

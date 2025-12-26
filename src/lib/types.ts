@@ -61,14 +61,13 @@ export interface Contract {
 export interface Voucher {
   id: string;
   code: string;
-  discountPercentage: number;
+  discountPercentage: number; // Porcentagem de desconto (5% ou 2%)
   isActive: boolean;
   isUsed: boolean;
-  franchiseId: string;
-  contractId?: string;
   clientCpfCnpj: string;
   createdAt: string;
   expiresAt: string;
+  contract?: any;
 }
 
 export interface Page<T> {
@@ -89,7 +88,6 @@ export interface PointsSummary {
 }
 
 export interface VoucherGenerateRequest {
-  clientCpfCnpj: string;
-  pointsToUse: number;
-  franchiseId: string;
+  cpfCnpj: string;
+  points: number;
 }

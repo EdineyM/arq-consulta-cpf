@@ -57,8 +57,8 @@ export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
       <CardContent className="p-4">
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Convidados Extra:</span>
-            <span className="font-bold text-gray-900">{voucher.value}</span>
+            <span className="text-sm text-gray-500">Desconto:</span>
+            <span className="font-bold text-red-600 text-xl">{voucher.value}%</span>
           </div>
 
           <div className="flex justify-between items-center">
@@ -73,7 +73,9 @@ export function VoucherCard({ voucher, highlight = false }: VoucherCardProps) {
 
           {highlight && (
             <div className="mt-3 pt-3 border-t border-dashed border-red-200 text-center">
-              <p className="text-sm text-red-700 font-medium">Apresente este código na sua próxima compra!</p>
+              <p className="text-sm text-red-700 font-medium">
+                Apresente este código no seu próximo evento e ganhe {voucher.value}% de desconto!
+              </p>
             </div>
           )}
         </div>

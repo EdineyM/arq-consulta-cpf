@@ -127,18 +127,18 @@ export function CpfVerificationForm() {
   }
 
   return (
-    <Card className="shadow-lg border-0 animate-fade-in bg-white">
+    <Card className="shadow-2xl border-2 border-orange-500/30 animate-fade-in bg-gradient-to-br from-slate-800 to-slate-900">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Ticket className="h-5 w-5 text-red-600" />
+        <CardTitle className="flex items-center gap-2 text-orange-400">
+          <Ticket className="h-5 w-5 text-orange-500" />
           Consulta de CPF
         </CardTitle>
-        <CardDescription>Digite seu CPF para verificar se você tem direito a vouchers promocionais</CardDescription>
+        <CardDescription className="text-gray-300">Digite seu CPF para verificar se você tem direito a vouchers promocionais</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2 animate-slide-in-left animation-delay-300">
-            <label htmlFor="cpf" className="text-sm font-medium">
+            <label htmlFor="cpf" className="text-sm font-medium text-orange-300">
               CPF
             </label>
             <Input
@@ -146,7 +146,7 @@ export function CpfVerificationForm() {
               placeholder="000.000.000-00"
               value={cpf}
               onChange={handleCpfChange}
-              className="w-full transition-all duration-200 focus:scale-[1.01]"
+              className="w-full transition-all duration-200 focus:scale-[1.01] bg-slate-700 border-orange-500/50 text-white placeholder:text-gray-400 focus:border-orange-400"
               maxLength={14}
             />
           </div>
@@ -161,7 +161,7 @@ export function CpfVerificationForm() {
 
           <Button
             type="submit"
-            className="w-full transition-all duration-300 bg-red-600 hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] text-white"
+            className="w-full transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 hover:scale-[1.02] active:scale-[0.98] text-white shadow-lg hover:shadow-orange-500/50"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -178,7 +178,7 @@ export function CpfVerificationForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="text-xs text-gray-500 justify-center animate-fade-in animation-delay-500">
+      <CardFooter className="text-xs text-gray-400 justify-center animate-fade-in animation-delay-500">
         Sistema de verificação de benefícios para clientes
       </CardFooter>
     </Card>

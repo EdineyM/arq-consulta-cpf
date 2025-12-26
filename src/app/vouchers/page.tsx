@@ -19,10 +19,10 @@ export default function VouchersPage({
         <div className="w-full max-w-4xl">
           <div className="mb-8 text-center">
             <h1 className="animate-fade-in text-4xl font-extrabold text-gray-900 md:text-5xl">
-              Seus Vouchers Promocionais
+              Seus Vouchers de Desconto
             </h1>
             <p className="animate-fade-in animation-delay-150 mt-2 text-gray-700">
-              Aproveite descontos especiais na sua próxima pizza!
+              Ganhe 5% de desconto no próximo evento ou 2% se você indicou alguém!
             </p>
           </div>
 

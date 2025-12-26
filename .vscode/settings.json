@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "maglev.proxy.rlwy.net",
+            "port": 36346,
+            "driver": "PostgreSQL",
+            "name": "Banco Dev",
+            "database": "railway",
+            "username": "postgres"
+        }
+    ]
+}
