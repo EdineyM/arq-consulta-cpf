@@ -114,8 +114,14 @@ export function VouchersList({ vouchers }: VouchersListProps) {
                           USADO
                         </div>
                       </div>
-                      <div className="text-sm text-gray-400">
-                        Criado em {new Date(voucher.createdAt).toLocaleDateString('pt-BR')}
+                      <div className="text-sm text-gray-400 space-y-1">
+                        <div>Criado em {new Date(voucher.createdAt).toLocaleDateString('pt-BR')}</div>
+                        {voucher.contract?.contractNumber && (
+                          <div className="flex items-center gap-1 text-blue-400">
+                            <span>📋</span>
+                            <span>Usado no contrato: <span className="font-semibold">{voucher.contract.contractNumber}</span></span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
